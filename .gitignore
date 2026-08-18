@@ -1,4 +1,5 @@
 cmake-build-*/
+build/
 *.user
 *.pro.user
 *.log

@@ -1,0 +1,16 @@
+I want to make the service available to several users. Therefore, I need to create a new table in the database in order to store
+user data. The table should have:
+userid (primary key), username, password.
+Every time a cleint logs in with (userid, password) the server generates a JWT token with 5 minutes expiration time.
+When the server receives a request, it checks the token validity and responds with 401 status code if invalid.
+The 401 status code is also sent back on invalid login request.
+
+when making a request to the server, the client checks the existence of a valid token to be sent along.
+
+In the case of non existent or invalid token, the client sends a new login with userid and password.
+
+The client stores the userid, password in the home/.local/pwd/.env file. If this file does not exist, the client opens a signup
+dialog window and sends a signup request.
+
+
+
