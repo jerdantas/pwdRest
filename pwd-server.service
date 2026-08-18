@@ -1,0 +1,14 @@
+   [Unit]
+   Description=Password Manager C++ Server
+   After=network.target
+
+   [Service]
+   Type=simple
+   User=joao
+   WorkingDirectory=/opt/pwd-server
+   ExecStart=/opt/pwd-server/pwd-server
+   Restart=on-failure
+   RestartSec=5
+
+   [Install]
+   WantedBy=multi-user.target

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>NewEntryDialog</class>
+ <widget class="QDialog" name="NewEntryDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>362</width>
+    <height>218</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Add site</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <widget class="QWidget" name="formLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>30</y>
+     <width>281</width>
+     <height>106</height>
+    </rect>
+   </property>
+   <layout class="QFormLayout" name="formLayout">
+    <item row="0" column="0">
+     <widget class="QLabel" name="siteLabel">
+      <property name="text">
+       <string>Site:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLineEdit" name="siteEdit"/>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="userIdLabel">
+      <property name="text">
+       <string>User Id:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QLineEdit" name="userIdEdit"/>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="passwordLabel">
+      <property name="text">
+       <string>Password:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QLineEdit" name="passwordEdit"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="layoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>90</x>
+     <y>160</y>
+     <width>169</width>
+     <height>33</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QPushButton" name="saveButton">
+      <property name="text">
+       <string>Save</string>
+      </property>
+      <property name="icon">
+       <iconset theme="QIcon::ThemeIcon::ListAdd"/>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="cancelButton">
+      <property name="text">
+       <string>Cancel</string>
+      </property>
+      <property name="icon">
+       <iconset theme="QIcon::ThemeIcon::EditClear"/>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>saveButton</sender>
+   <signal>clicked()</signal>
+   <receiver>NewEntryDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>130</x>
+     <y>176</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>180</x>
+     <y>108</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cancelButton</sender>
+   <signal>clicked()</signal>
+   <receiver>NewEntryDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>217</x>
+     <y>176</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>180</x>
+     <y>108</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

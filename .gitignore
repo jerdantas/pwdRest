@@ -1,0 +1,12 @@
+cmake-build-*/
+*.user
+*.pro.user
+*.log
+*.db
+*.o
+*.so
+*.a
+*.swp
+*.DS_Store
+.idea/
+.vscode/

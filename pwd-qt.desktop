@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Password Manager
+Exec=/home/dantas/CLionProjects/pwd-qt/cmake-build-release/pwd-qt
+Icon=/home/dantas/CLionProjects/pwd-qt/icons/password-strength.png
+Type=Application
+Categories=Utility;
