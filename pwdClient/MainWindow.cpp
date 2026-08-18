@@ -1,9 +1,8 @@
 //
-// Created by dantas on 8/19/25.
+// Created by dantas on 8/18/26.
 //
 
 #include <QClipboard>
-#include <QGuiApplication>
 #include <QMessageBox>
 #include <QKeyEvent>
 #include <QCompleter>
@@ -38,7 +37,7 @@ MainWindow::MainWindow(PasswordClient& pwclient, QWidget *parent)
     connect(ui->closeButton, &QPushButton::clicked, this, &MainWindow::onClose);
     connect(ui->listWidget, &QListWidget::itemClicked, this, &MainWindow::onSiteSelected);
     connect(ui->listWidget, &QListWidget::currentItemChanged, this,
-        [this](QListWidgetItem* current, QListWidgetItem*) {
+        [this](const QListWidgetItem* current, QListWidgetItem*) {
             if (current) ui->siteEdit->setText(current->text());
         });
     connect(ui->listWidget, &QListWidget::itemDoubleClicked, this, &MainWindow::onSiteDoubleClicked);
@@ -103,7 +102,7 @@ void MainWindow::onOk()
     }
 }
 
-void MainWindow::loadPasswords() {
+void MainWindow::loadPasswords() const {
     ui->listWidget->clear();
     auto entries = client.listSites();
     for (const auto& entry : entries) {
@@ -168,13 +167,13 @@ void MainWindow::onClose() {
     close();
 }
 
-void MainWindow::onSiteSelected(QListWidgetItem* item) {
+void MainWindow::onSiteSelected(const QListWidgetItem* item) const {
     if (item) {
         ui->siteEdit->setText(item->text());
     }
 }
 
-void MainWindow::onSiteDoubleClicked(QListWidgetItem* item) {
+void MainWindow::onSiteDoubleClicked(const QListWidgetItem* item) const {
     if (item) {
         ui->siteEdit->setText(item->text());  // Optional: update siteEdit
         ui->okButton->click();                // Simulate OK button click
@@ -183,7 +182,7 @@ void MainWindow::onSiteDoubleClicked(QListWidgetItem* item) {
 
 bool MainWindow::eventFilter(QObject* obj, QEvent* event) {
     if (obj == ui->siteEdit && event->type() == QEvent::KeyPress) {
-        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+        auto* keyEvent = dynamic_cast<QKeyEvent*>(event);
         if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) {
             ui->okButton->click();   // Simulate OK
             return true;

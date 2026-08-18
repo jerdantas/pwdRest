@@ -1,5 +1,5 @@
 //
-// Created by dantas on 8/19/25.
+// Created by dantas on 8/18/26.
 //
 
 #include "PasswordStore.h"
@@ -21,7 +21,7 @@ void PasswordStore::openDb(const std::string& path) {
     }
 }
 
-void PasswordStore::initSchema() {
+void PasswordStore::initSchema() const {
     const char* sql = R"SQL(
         CREATE TABLE IF NOT EXISTS "PassWd" (
             "id"        INTEGER NOT NULL,
@@ -39,7 +39,7 @@ void PasswordStore::initSchema() {
     }
 }
 
-bool PasswordStore::get(const std::string& site, std::string& user, std::string& pass) {
+bool PasswordStore::get(const std::string& site, std::string& user, std::string& pass) const {
     const char* sql = "SELECT UserId, Passwd FROM PassWd WHERE Site = ?1;";
     sqlite3_stmt* stmt = nullptr;
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK)
@@ -64,7 +64,7 @@ bool PasswordStore::get(const std::string& site, std::string& user, std::string&
     return found;
 }
 
-void PasswordStore::set(const std::string& site, const std::string& user, const std::string& pass) {
+void PasswordStore::set(const std::string& site, const std::string& user, const std::string& pass) const {
     const char* sql = R"SQL(
         INSERT INTO PassWd (Site, UserId, Passwd)
         VALUES (?1, ?2, ?3)
@@ -87,7 +87,7 @@ void PasswordStore::set(const std::string& site, const std::string& user, const 
     finalize(stmt);
 }
 
-bool PasswordStore::del(const std::string& site) {
+bool PasswordStore::del(const std::string& site) const {
     const char* sql = "DELETE FROM PassWd WHERE Site = ?1;";
     sqlite3_stmt* stmt = nullptr;
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK)
@@ -116,8 +116,7 @@ std::vector<std::string> PasswordStore::listSites() const {
     while (true) {
         int rc = sqlite3_step(stmt);
         if (rc == SQLITE_ROW) {
-            const unsigned char* s = sqlite3_column_text(stmt, 0);
-            if (s) sites.emplace_back(reinterpret_cast<const char*>(s));
+            if (const unsigned char* s = sqlite3_column_text(stmt, 0)) sites.emplace_back(reinterpret_cast<const char*>(s));
         } else if (rc == SQLITE_DONE) {
             break;
         } else {
@@ -129,6 +128,6 @@ std::vector<std::string> PasswordStore::listSites() const {
     return sites;
 }
 
-void PasswordStore::finalize(sqlite3_stmt* stmt) const noexcept {
+void PasswordStore::finalize(sqlite3_stmt* stmt) noexcept {
     if (stmt) sqlite3_finalize(stmt);
 }

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(pwd-qt VERSION 0.2 LANGUAGES CXX)
+project(pwdRest VERSION 0.2 LANGUAGES CXX)
 
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 

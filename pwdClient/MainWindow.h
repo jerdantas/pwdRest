@@ -1,5 +1,5 @@
 //
-// Created by dantas on 8/19/25.
+// Created by dantas on 8/18/26.
 //
 
 #ifndef MAINWINDOW_H
@@ -20,9 +20,8 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(PasswordClient& pwclient, QWidget *parent = nullptr);
-    ~MainWindow();
+    ~MainWindow() override;
 
-protected:
     bool eventFilter(QObject* obj, QEvent* event) override;
 
 private slots:
@@ -30,15 +29,15 @@ private slots:
     void onDelete();
     void onNew();
     void onClose();
-    void onSiteSelected(QListWidgetItem* item);
-    void onSiteDoubleClicked(QListWidgetItem* item);
+    void onSiteSelected(const QListWidgetItem* item) const;
+    void onSiteDoubleClicked(const QListWidgetItem* item) const;
 
 private:
     Ui::MainWindow *ui;
     PasswordClient& client;
     QStringListModel* siteModel;
 
-    void loadPasswords();
+    void loadPasswords() const;
     void refreshCompleter();
 };
 #endif // MAINWINDOW_H

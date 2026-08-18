@@ -1,5 +1,5 @@
 //
-// Created by dantas on 8/19/25.
+// Created by dantas on 8/18/26.
 //
 
 #include "NewEntryDialog.h"
@@ -54,7 +54,7 @@ void NewEntryDialog::acceptit()
     }
 }
 
-void NewEntryDialog::setSite(const QString &site) {
+void NewEntryDialog::setSite(const QString &site) const {
     if (!site.isEmpty()) {
         ui->siteEdit->setText(site);
     }

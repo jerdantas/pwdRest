@@ -1,12 +1,9 @@
 //
-// Created by dantas on 8/19/25.
+// Created by dantas on 8/18/26.
 //
 
 #ifndef NEWENTRYDIALOG_H
 #define NEWENTRYDIALOG_H
-
-#include <QDialog>
-#include "PasswordStore.h"
 
 namespace Ui {
     class NewEntryDialog;
@@ -25,12 +22,12 @@ class NewEntryDialog : public QDialog
 
 public:
     explicit NewEntryDialog(PasswordClient& pwclient, QWidget *parent = nullptr);
-    ~NewEntryDialog();
+    ~NewEntryDialog() override;
 
-    QString getSite() const;
-    QString getUserId() const;
-    QString getPassword() const;
-    void setSite(const QString& site);
+    [[nodiscard]] QString getSite() const;
+    [[nodiscard]] QString getUserId() const;
+    [[nodiscard]] QString getPassword() const;
+    void setSite(const QString& site) const;
 
 private:
     Ui::NewEntryDialog *ui;

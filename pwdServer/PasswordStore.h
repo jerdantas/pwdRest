@@ -1,5 +1,5 @@
 //
-// Created by dantas on 8/19/25.
+// Created by dantas on 8/18/26.
 //
 
 #ifndef PASSWORDSTORE_H
@@ -21,9 +21,9 @@ public:
     PasswordStore& operator=(const PasswordStore&) = delete;
 
     // CRUD
-    bool get(const std::string& site, std::string& user, std::string& pass);
-    void set(const std::string& site, const std::string& user, const std::string& pass);
-    bool del(const std::string& site);
+    bool get(const std::string& site, std::string& user, std::string& pass) const;
+    void set(const std::string& site, const std::string& user, const std::string& pass) const;
+    bool del(const std::string& site) const;
 
     std::vector<std::string> listSites() const;
 
@@ -31,8 +31,8 @@ private:
     sqlite3* db{nullptr};
 
     void openDb(const std::string& path);
-    void initSchema();
-    void finalize(sqlite3_stmt* stmt) const noexcept;
+    void initSchema() const;
+    static void finalize(sqlite3_stmt* stmt) noexcept;
 };
 
 #endif // PASSWORDSTORE_H

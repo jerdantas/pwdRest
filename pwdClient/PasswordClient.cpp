@@ -7,12 +7,13 @@
 #include <httplib.h>
 #include <nlohmann/json.hpp>
 #include <stdexcept>
+#include <utility>
 
 using json = nlohmann::json;
 
-PasswordClient::PasswordClient(const std::string& serverUrl) : baseUrl(serverUrl) {}
+PasswordClient::PasswordClient(std::string  serverUrl) : baseUrl(std::move(serverUrl)) {}
 
-bool PasswordClient::get(const std::string& name, std::string& userId, std::string& password) {
+bool PasswordClient::get(const std::string& name, std::string& userId, std::string& password) const {
     httplib::Client cli(baseUrl);
     auto res = cli.Get("/pwserver/password/" + name);
     if (res && res->status == 200) {
@@ -27,7 +28,7 @@ bool PasswordClient::get(const std::string& name, std::string& userId, std::stri
     return false;
 }
 
-void PasswordClient::set(const std::string& name, const std::string& userId, const std::string& password) {
+void PasswordClient::set(const std::string& name, const std::string& userId, const std::string& password) const {
     httplib::Client cli(baseUrl);
     json j = {{"name", name}, {"userId", userId}, {"password", password}};
     auto res = cli.Post("/pwserver/password", j.dump(), "application/json");
@@ -36,7 +37,7 @@ void PasswordClient::set(const std::string& name, const std::string& userId, con
     }
 }
 
-bool PasswordClient::del(const std::string& name) {
+bool PasswordClient::del(const std::string& name) const {
     httplib::Client cli(baseUrl);
     auto res = cli.Delete("/pwserver/password/" + name);
     if (!res) {
@@ -51,11 +52,13 @@ bool PasswordClient::del(const std::string& name) {
 
             case 500:
                 throw std::runtime_error("Error deleting password: " + res->body);
+
+        default: ;
     }
     return false;
 }
 
-std::vector<std::string> PasswordClient::listSites() {
+std::vector<std::string> PasswordClient::listSites() const {
     httplib::Client cli(baseUrl);
     auto res = cli.Get("/pwserver/sites");
     std::vector<std::string> sites;
@@ -72,7 +75,7 @@ std::vector<std::string> PasswordClient::listSites() {
     return sites;
 }
 
-QStringList PasswordClient::getSiteNames() {
+QStringList PasswordClient::getSiteNames() const {
     QStringList list;
     for (const auto& site : listSites()) {
         list << QString::fromStdString(site);
