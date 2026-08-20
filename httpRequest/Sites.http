@@ -1,0 +1,20 @@
+### Login and Store Token
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "ownerId": "dantas",
+  "ownerPwd": "mypwd"
+}
+
+> {%
+    client.test("Status is 200 OK", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    // Store token in global environment for subsequent calls
+    client.global.set("auth_token", response.body.token);
+%}
+
+### Fetch Protected Data
+GET http://localhost:8080/sites
+Authorization: Bearer {{auth_token}}

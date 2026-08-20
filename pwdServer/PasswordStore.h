@@ -5,11 +5,9 @@
 #ifndef PASSWORDSTORE_H
 #define PASSWORDSTORE_H
 
-// #include <sqlcipher/sqlite3.h>  // On some systems
 #include <sqlite3.h>
 #include <string>
 #include <vector>
-#include <stdexcept>
 
 class PasswordStore {
 public:
@@ -21,11 +19,15 @@ public:
     PasswordStore& operator=(const PasswordStore&) = delete;
 
     // CRUD
-    bool get(const std::string& site, std::string& user, std::string& pass) const;
-    void set(const std::string& site, const std::string& user, const std::string& pass) const;
-    bool del(const std::string& site) const;
+    bool get(const std::string& ownerId, const std::string& site, std::string& user, std::string& pass) const;
+    void set(const std::string& ownerId, const std::string& site, const std::string& user, const std::string& pass) const;
 
-    std::vector<std::string> listSites() const;
+    [[nodiscard]] bool del(const std::string& ownerId, const std::string& site) const;
+    [[nodiscard]] std::vector<std::string> listSites(const std::string& ownerId) const;
+
+    // User Management
+    [[nodiscard]] bool createOwner(const std::string& ownerId, const std::string& ownerName, const std::string& ownerPwd) const;
+    [[nodiscard]] int validateOwner(const std::string& ownerId, const std::string& ownerPwd) const;
 
 private:
     sqlite3* db{nullptr};

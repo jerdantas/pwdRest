@@ -1,0 +1,19 @@
+### Login and Store Token
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+    "ownerId": "dantas",
+    "ownerPwd": "mypwd"
+}
+
+###
+
+POST http://localhost:8080/signup
+Content-Type: application/json
+
+{
+  "ownerId": "dantas",
+  "ownerName": "João Eduardo",
+  "ownerPwd": "mypwd"
+}

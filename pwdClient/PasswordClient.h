@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <QStringList>
+#include <httplib.h>
 
 class PasswordClient {
 public:
@@ -21,6 +22,10 @@ public:
 
 private:
     std::string baseUrl;
+    mutable std::string jwtToken;
+
+    bool login() const;
+    httplib::Headers getHeaders() const;
 };
 
 #endif // PASSWORDCLIENT_H

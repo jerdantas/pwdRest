@@ -13,9 +13,41 @@ using json = nlohmann::json;
 
 PasswordClient::PasswordClient(std::string  serverUrl) : baseUrl(std::move(serverUrl)) {}
 
+bool PasswordClient::login() const {
+    const char* homeDir = std::getenv("HOME");
+    if (!homeDir) return false;
+
+    std::string envPath = std::string(homeDir) + "/.local/pwd/.env";
+    std::ifstream file(envPath);
+    if (!file.is_open()) return false;
+
+    std::string ownerId, ownerPwd;
+    std::getline(file, ownerId);
+    std::getline(file, ownerPwd);
+
+    httplib::Client cli(baseUrl);
+    json j = {{"ownerId", ownerId}, {"ownerPwd", ownerPwd}};
+    auto res = cli.Post("/login", j.dump(), "application/json");
+    if (res && res->status == 200) {
+        auto resp_j = json::parse(res->body);
+        jwtToken = resp_j["token"];
+        return true;
+    }
+    return false;
+}
+
+httplib::Headers PasswordClient::getHeaders() const {
+    return {{"Authorization", "Bearer " + jwtToken}};
+}
+
 bool PasswordClient::get(const std::string& name, std::string& userId, std::string& password) const {
     httplib::Client cli(baseUrl);
-    auto res = cli.Get("/pwserver/password/" + name);
+    auto res = cli.Get("/pwserver/password/" + name, getHeaders());
+    if (res && res->status == 401) {
+        if (login()) {
+            res = cli.Get("/pwserver/password/" + name, getHeaders());
+        }
+    }
     if (res && res->status == 200) {
         auto j = json::parse(res->body);
         userId = j["userId"];
@@ -31,18 +63,29 @@ bool PasswordClient::get(const std::string& name, std::string& userId, std::stri
 void PasswordClient::set(const std::string& name, const std::string& userId, const std::string& password) const {
     httplib::Client cli(baseUrl);
     json j = {{"name", name}, {"userId", userId}, {"password", password}};
-    auto res = cli.Post("/pwserver/password", j.dump(), "application/json");
+    auto res = cli.Post("/pwserver/password", getHeaders(), j.dump(), "application/json");
+    if (res && res->status == 401) {
+        if (login()) {
+            res = cli.Post("/pwserver/password", getHeaders(), j.dump(), "application/json");
+        }
+    }
     if (!res || res->status != 200) {
-        throw std::runtime_error("Failed to save password to server: " + res->body);
+        throw std::runtime_error("Failed to save password to server: " + (res ? res->body : "Network error"));
     }
 }
 
 bool PasswordClient::del(const std::string& name) const {
     httplib::Client cli(baseUrl);
-    auto res = cli.Delete("/pwserver/password/" + name);
+    auto res = cli.Delete("/pwserver/password/" + name, getHeaders());
+    if (res && res->status == 401) {
+        if (login()) {
+            res = cli.Delete("/pwserver/password/" + name, getHeaders());
+        }
+    }
     if (!res) {
         return false;
     }
+
     switch (res->status) {
         case 200:
             return true;
@@ -60,7 +103,12 @@ bool PasswordClient::del(const std::string& name) const {
 
 std::vector<std::string> PasswordClient::listSites() const {
     httplib::Client cli(baseUrl);
-    auto res = cli.Get("/pwserver/sites");
+    auto res = cli.Get("/pwserver/sites", getHeaders());
+    if (res && res->status == 401) {
+        if (login()) {
+            res = cli.Get("/pwserver/sites", getHeaders());
+        }
+    }
     std::vector<std::string> sites;
     if (res && res->status == 200) {
         auto j = json::parse(res->body);

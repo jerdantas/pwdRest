@@ -1,0 +1,14 @@
+### Set new site
+POST http://localhost:8080/password
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "name": "google",
+  "userId": "jer.dantas@gmail.com",
+  "password": "goglepassw2"
+}
+###
+
+GET http://localhost:8080/password/google
+Authorization: Bearer {{auth_token}}

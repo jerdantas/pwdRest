@@ -35,6 +35,16 @@ GIT_TAG        v3.11.2
 )
 FetchContent_MakeAvailable(json)
 
+# Fetch jwt-cpp for JWT generation and validation
+FetchContent_Declare(
+jwt_cpp
+GIT_REPOSITORY https://github.com/Thalhammer/jwt-cpp.git
+GIT_TAG        v0.7.0
+)
+FetchContent_MakeAvailable(jwt_cpp)
+
+find_package(OpenSSL REQUIRED)
+
 set(CLIENT_SOURCES
     pwdClient/client_main.cpp
     pwdClient/PasswordClient.cpp
@@ -72,4 +82,4 @@ target_link_libraries(pwd-client PRIVATE Qt6::Widgets httplib::httplib nlohmann_
 # Server Target
 add_executable(pwd-server ${SERVER_SOURCES} ${SERVER_HEADERS})
 target_include_directories(pwd-server PRIVATE ${SQLite3_INCLUDE_DIRS})
-target_link_libraries(pwd-server PRIVATE ${SQLite3_LIBRARIES} httplib::httplib nlohmann_json::nlohmann_json)
+target_link_libraries(pwd-server PRIVATE ${SQLite3_LIBRARIES} httplib::httplib nlohmann_json::nlohmann_json jwt-cpp::jwt-cpp OpenSSL::SSL OpenSSL::Crypto)
