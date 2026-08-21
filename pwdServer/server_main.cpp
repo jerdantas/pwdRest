@@ -106,29 +106,34 @@ int main() {
                 json response = {{"token", token}};
                 res.status = 200;
                 res.set_content(response.dump(), "application/json");
+                // std::cout << "Login successful" << std::endl;
                 break;
             }
 
             case 401: {
                 res.status = 401;
                 res.set_content("Unauthorized", "text/plain");
+                // std::cout << "Login unauthorized" << std::endl;
                 break;
             }
 
             case 404: {
                 res.status = 404;
                 res.set_content("User not found", "text/plain");
+                // std::cout << "User not found" << std::endl;
                 break;
             }
 
             default:
                 res.status = 500;
                 res.set_content("Internal server error", "text/plain");
+                // std::cout << "Internal server error" << std::endl;
                 break;
             }
         } catch (const std::exception& e) {
             res.status = 500;
             res.set_content(std::string("Error during login: ") + e.what(), "text/plain");
+            // std::cout << "Internal server error: " << e.what() << std::endl;
         }
     });
 
@@ -138,10 +143,12 @@ int main() {
             std::string ownerId = getOwnerId(req);
             auto sites = store.listSites(ownerId);
             json j = sites;
+            res.status = 200;
             res.set_content(j.dump(), "application/json");
         } catch (const std::exception& e) {
-            res.set_content(std::string("Error listing sites: ") + e.what(),  "text/plain");
             res.status = 500;
+            res.set_content(std::string("Error listing sites: ") + e.what(),  "text/plain");
+            // std::cout << "Internal server error: " << e.what() << std::endl;
             return;
         }
     });
@@ -154,13 +161,14 @@ int main() {
             std::string ownerId = getOwnerId(req);
             if (store.get(ownerId, site, user, pass)) {
                 json j = {{"userId", user}, {"password", pass}};
+                res.status = 200;
                 res.set_content(j.dump(), "application/json");
             } else {
                 res.status = 404;
             }
         } catch (const std::exception& e) {
-            res.set_content(std::string("Error getting password for site: ") + e.what(),  "text/plain");
             res.status = 500;
+            res.set_content(std::string("Error getting password for site: ") + e.what(),  "text/plain");
             return;
         }
     });
@@ -195,7 +203,7 @@ int main() {
         }
     });
 
-    std::cout << "Database initialized at " << (dir / "passwd.db").string() << std::endl;
+    std::cout << "Database initialized at " << (dir / "rempasswd.db").string() << std::endl;
     std::cout << "Starting server on http://localhost:8080" << std::endl;
     svr.listen("0.0.0.0", 8080);
 

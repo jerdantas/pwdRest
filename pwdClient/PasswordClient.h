@@ -14,6 +14,9 @@ class PasswordClient {
 public:
     explicit PasswordClient(std::string  serverUrl);
 
+    bool login() const;
+    bool login(const std::string& ownerId, const std::string& ownerPwd) const;
+    bool signup(const std::string& ownerId, const std::string& ownerName, const std::string& password) const;
     bool get(const std::string& name, std::string& userId, std::string& password) const;
     void set(const std::string& name, const std::string& userId, const std::string& password) const;
     bool del(const std::string& name) const;
@@ -24,7 +27,6 @@ private:
     std::string baseUrl;
     mutable std::string jwtToken;
 
-    bool login() const;
     httplib::Headers getHeaders() const;
 };
 

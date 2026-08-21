@@ -17,7 +17,7 @@ bool PasswordClient::login() const {
     const char* homeDir = std::getenv("HOME");
     if (!homeDir) return false;
 
-    std::string envPath = std::string(homeDir) + "/.local/pwd/.env";
+    std::string envPath = std::string(homeDir) + "/.local/pwd-client/.env";
     std::ifstream file(envPath);
     if (!file.is_open()) return false;
 
@@ -25,9 +25,14 @@ bool PasswordClient::login() const {
     std::getline(file, ownerId);
     std::getline(file, ownerPwd);
 
+    return login(ownerId, ownerPwd);
+}
+
+bool PasswordClient::login(const std::string& ownerId, const std::string& ownerPwd) const {
     httplib::Client cli(baseUrl);
     json j = {{"ownerId", ownerId}, {"ownerPwd", ownerPwd}};
     auto res = cli.Post("/login", j.dump(), "application/json");
+    // std::cout << "Login response status: " << res->status << std::endl;
     if (res && res->status == 200) {
         auto resp_j = json::parse(res->body);
         jwtToken = resp_j["token"];
@@ -36,16 +41,30 @@ bool PasswordClient::login() const {
     return false;
 }
 
+bool PasswordClient::signup(const std::string& ownerId, const std::string& ownerName, const std::string& password) const {
+    httplib::Client cli(baseUrl);
+    json j = {
+        {"ownerId", ownerId},
+        {"ownerName", ownerName},
+        {"ownerPwd", password}
+    };
+    auto res = cli.Post("/signup", j.dump(), "application/json");
+    // std::cout << "Signup response status: " << res->status << std::endl;
+    return res && res->status == 201;
+}
+
 httplib::Headers PasswordClient::getHeaders() const {
     return {{"Authorization", "Bearer " + jwtToken}};
 }
 
 bool PasswordClient::get(const std::string& name, std::string& userId, std::string& password) const {
     httplib::Client cli(baseUrl);
-    auto res = cli.Get("/pwserver/password/" + name, getHeaders());
+    auto res = cli.Get("/password/" + name, getHeaders());
+    // std::cout << "Get password response status: " << res->status << std::endl;
     if (res && res->status == 401) {
         if (login()) {
-            res = cli.Get("/pwserver/password/" + name, getHeaders());
+            res = cli.Get("/password/" + name, getHeaders());
+            // std::cout << "Get password response status after login: " << res->status << std::endl;
         }
     }
     if (res && res->status == 200) {
@@ -63,10 +82,12 @@ bool PasswordClient::get(const std::string& name, std::string& userId, std::stri
 void PasswordClient::set(const std::string& name, const std::string& userId, const std::string& password) const {
     httplib::Client cli(baseUrl);
     json j = {{"name", name}, {"userId", userId}, {"password", password}};
-    auto res = cli.Post("/pwserver/password", getHeaders(), j.dump(), "application/json");
+    auto res = cli.Post("/password", getHeaders(), j.dump(), "application/json");
+    // std::cout << "Set password response status: " << res->status << std::endl;
     if (res && res->status == 401) {
         if (login()) {
-            res = cli.Post("/pwserver/password", getHeaders(), j.dump(), "application/json");
+            res = cli.Post("/password", getHeaders(), j.dump(), "application/json");
+            // std::cout << "Set password response status after login: " << res->status << std::endl;
         }
     }
     if (!res || res->status != 200) {
@@ -76,10 +97,12 @@ void PasswordClient::set(const std::string& name, const std::string& userId, con
 
 bool PasswordClient::del(const std::string& name) const {
     httplib::Client cli(baseUrl);
-    auto res = cli.Delete("/pwserver/password/" + name, getHeaders());
+    auto res = cli.Delete("/password/" + name, getHeaders());
+    // std::cout << "Delete password response status: " << res->status << std::endl;
     if (res && res->status == 401) {
         if (login()) {
-            res = cli.Delete("/pwserver/password/" + name, getHeaders());
+            res = cli.Delete("/password/" + name, getHeaders());
+            // std::cout << "Delete password response status after login: " << res->status << std::endl;
         }
     }
     if (!res) {
@@ -103,10 +126,12 @@ bool PasswordClient::del(const std::string& name) const {
 
 std::vector<std::string> PasswordClient::listSites() const {
     httplib::Client cli(baseUrl);
-    auto res = cli.Get("/pwserver/sites", getHeaders());
+    auto res = cli.Get("/sites", getHeaders());
+    // std::cout << "List sites response status: " << res->status << std::endl;
     if (res && res->status == 401) {
         if (login()) {
-            res = cli.Get("/pwserver/sites", getHeaders());
+            res = cli.Get("/sites", getHeaders());
+            // std::cout << "List sites response status after login: " << res->status << res->body << std::endl;
         }
     }
     std::vector<std::string> sites;

@@ -46,22 +46,27 @@ FetchContent_MakeAvailable(jwt_cpp)
 find_package(OpenSSL REQUIRED)
 
 set(CLIENT_SOURCES
-    pwdClient/client_main.cpp
-    pwdClient/PasswordClient.cpp
-    pwdClient/MainWindow.cpp
-    pwdClient/NewEntryDialog.cpp
-    pwdClient/resources.qrc
+        pwdClient/client_main.cpp
+        pwdClient/PasswordClient.cpp
+        pwdClient/MainWindow.cpp
+        pwdClient/NewEntryDialog.cpp
+        pwdClient/LoginDialog.cpp
+        pwdClient/resources.qrc
 )
 
 set(CLIENT_HEADERS
-    pwdClient/MainWindow.h
-    pwdClient/NewEntryDialog.h
-    pwdClient/PasswordClient.h
+        pwdClient/MainWindow.h
+        pwdClient/NewEntryDialog.h
+        pwdClient/PasswordClient.h
+        pwdClient/LoginDialog.h
 )
 
 set (UIS
-    pwdClient/MainWindow.ui
-    pwdClient/NewEntryDialog.ui
+        pwdClient/MainWindow.ui
+        pwdClient/NewEntryDialog.ui
+        pwdClient/LoginDialog.ui
+        pwdClient/LoginDialog.cpp
+        pwdClient/LoginDialog.h
 )
 
 set(SERVER_SOURCES

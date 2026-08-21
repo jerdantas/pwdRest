@@ -3,8 +3,8 @@ POST http://localhost:8080/login
 Content-Type: application/json
 
 {
-  "ownerId": "dantas",
-  "ownerPwd": "mypwd"
+  "ownerId": "ana",
+  "ownerPwd": "anapwd"
 }
 
 > {%

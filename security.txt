@@ -1,13 +1,10 @@
-I want to make the service available to several users. Therefore, I need to create a new table in the database in order to store
-user data. The table should have:
-userid (primary key), username, password.
-Every time a cleint logs in with (userid, password) the server generates a JWT token with 5 minutes expiration time.
-When the server receives a request, it checks the token validity and responds with 401 status code if invalid.
-The 401 status code is also sent back on invalid login request.
-
-when making a request to the server, the client checks the existence of a valid token to be sent along.
-
-In the case of non existent or invalid token, the client sends a new login with userid and password.
-
-The client stores the userid, password in the home/.local/pwd/.env file. If this file does not exist, the client opens a signup
-dialog window and sends a signup request.
+The client stores the userid, password in the home/.local/pwd-client/.env file. If this file does not exist,
+the client opens a dialog for login or signup request.
+The login and signup dialogs are implemented in the client in files LoginDialog.cpp, LoginDialog.h, and LoginDialog.ui.
+The login dialog must have a OwnerId field and a Password field, and a Login, Signup, and Cancel button.
+The Signup button must be enabled only if the OwnerId field is empty.
+The Login button must be enabled only if the OwnerId field is not empty.
+The Cancel button must be enabled always.
+ he Login button must call the Login() which is implemented in PasswordClient.cpp.
+The signup dialog must have a OwnerName field, a UserName field and a Password field.
+The Signup button must call the Signup() method which is like the ensureCredentials() method in client_main.cpp.
