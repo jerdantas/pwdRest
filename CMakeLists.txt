@@ -65,8 +65,6 @@ set (UIS
         pwdClient/MainWindow.ui
         pwdClient/NewEntryDialog.ui
         pwdClient/LoginDialog.ui
-        pwdClient/LoginDialog.cpp
-        pwdClient/LoginDialog.h
 )
 
 set(SERVER_SOURCES
@@ -82,7 +80,8 @@ set(SERVER_HEADERS
 add_executable(pwd-client ${CLIENT_SOURCES} ${CLIENT_HEADERS} ${UIS})
 qt6_add_resources(GENERATED_RESOURCES pwdClient/resources.qrc)
 target_sources(pwd-client PRIVATE ${GENERATED_RESOURCES})
-target_link_libraries(pwd-client PRIVATE Qt6::Widgets httplib::httplib nlohmann_json::nlohmann_json)
+target_link_libraries(pwd-client PRIVATE Qt6::Widgets httplib::httplib nlohmann_json::nlohmann_json OpenSSL::SSL OpenSSL::Crypto)
+target_compile_definitions(pwd-client PRIVATE CPPHTTPLIB_OPENSSL_SUPPORT)
 
 # Server Target
 add_executable(pwd-server ${SERVER_SOURCES} ${SERVER_HEADERS})

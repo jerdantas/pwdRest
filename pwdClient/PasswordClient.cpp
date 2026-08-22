@@ -8,8 +8,27 @@
 #include <nlohmann/json.hpp>
 #include <stdexcept>
 #include <utility>
+#include <iostream>
 
 using json = nlohmann::json;
+
+static std::string getHost(const std::string& url) {
+    size_t pos = url.find("://");
+    if (pos != std::string::npos) {
+        size_t path_pos = url.find('/', pos + 3);
+        if (path_pos != std::string::npos) return url.substr(0, path_pos);
+    }
+    return url;
+}
+
+static std::string buildPath(const std::string& url, const std::string& endpoint) {
+    size_t pos = url.find("://");
+    if (pos != std::string::npos) {
+        size_t path_pos = url.find('/', pos + 3);
+        if (path_pos != std::string::npos) return url.substr(path_pos) + endpoint;
+    }
+    return endpoint;
+}
 
 PasswordClient::PasswordClient(std::string  serverUrl) : baseUrl(std::move(serverUrl)) {}
 
@@ -29,11 +48,16 @@ bool PasswordClient::login() const {
 }
 
 bool PasswordClient::login(const std::string& ownerId, const std::string& ownerPwd) const {
-    httplib::Client cli(baseUrl);
+    httplib::Client cli(getHost(baseUrl));
+    cli.enable_server_certificate_verification(false);
     json j = {{"ownerId", ownerId}, {"ownerPwd", ownerPwd}};
-    auto res = cli.Post("/login", j.dump(), "application/json");
+    auto res = cli.Post(buildPath(baseUrl, "/login"), j.dump(), "application/json");
+    if (!res) {
+        std::cerr << "Network error during login" << std::endl;
+        return false;
+    }
     // std::cout << "Login response status: " << res->status << std::endl;
-    if (res && res->status == 200) {
+    if (res->status == 200) {
         auto resp_j = json::parse(res->body);
         jwtToken = resp_j["token"];
         return true;
@@ -42,15 +66,17 @@ bool PasswordClient::login(const std::string& ownerId, const std::string& ownerP
 }
 
 bool PasswordClient::signup(const std::string& ownerId, const std::string& ownerName, const std::string& password) const {
-    httplib::Client cli(baseUrl);
+    httplib::Client cli(getHost(baseUrl));
+    cli.enable_server_certificate_verification(false);
     json j = {
         {"ownerId", ownerId},
         {"ownerName", ownerName},
         {"ownerPwd", password}
     };
-    auto res = cli.Post("/signup", j.dump(), "application/json");
+    auto res = cli.Post(buildPath(baseUrl, "/signup"), j.dump(), "application/json");
+    if (!res) return false;
     // std::cout << "Signup response status: " << res->status << std::endl;
-    return res && res->status == 201;
+    return res->status == 201;
 }
 
 httplib::Headers PasswordClient::getHeaders() const {
@@ -58,16 +84,19 @@ httplib::Headers PasswordClient::getHeaders() const {
 }
 
 bool PasswordClient::get(const std::string& name, std::string& userId, std::string& password) const {
-    httplib::Client cli(baseUrl);
-    auto res = cli.Get("/password/" + name, getHeaders());
+    httplib::Client cli(getHost(baseUrl));
+    cli.enable_server_certificate_verification(false);
+    auto res = cli.Get(buildPath(baseUrl, "/password/" + name), getHeaders());
+    if (!res) return false;
     // std::cout << "Get password response status: " << res->status << std::endl;
-    if (res && res->status == 401) {
+    if (res->status == 401) {
         if (login()) {
-            res = cli.Get("/password/" + name, getHeaders());
+            res = cli.Get(buildPath(baseUrl, "/password/" + name), getHeaders());
+            if (!res) return false;
             // std::cout << "Get password response status after login: " << res->status << std::endl;
         }
     }
-    if (res && res->status == 200) {
+    if (res->status == 200) {
         auto j = json::parse(res->body);
         userId = j["userId"];
         password = j["password"];
@@ -80,33 +109,36 @@ bool PasswordClient::get(const std::string& name, std::string& userId, std::stri
 }
 
 void PasswordClient::set(const std::string& name, const std::string& userId, const std::string& password) const {
-    httplib::Client cli(baseUrl);
+    httplib::Client cli(getHost(baseUrl));
+    cli.enable_server_certificate_verification(false);
     json j = {{"name", name}, {"userId", userId}, {"password", password}};
-    auto res = cli.Post("/password", getHeaders(), j.dump(), "application/json");
+    auto res = cli.Post(buildPath(baseUrl, "/password"), getHeaders(), j.dump(), "application/json");
+    if (!res) throw std::runtime_error("Network error during set password");
     // std::cout << "Set password response status: " << res->status << std::endl;
-    if (res && res->status == 401) {
+    if (res->status == 401) {
         if (login()) {
-            res = cli.Post("/password", getHeaders(), j.dump(), "application/json");
+            res = cli.Post(buildPath(baseUrl, "/password"), getHeaders(), j.dump(), "application/json");
+            if (!res) throw std::runtime_error("Network error during set password retry");
             // std::cout << "Set password response status after login: " << res->status << std::endl;
         }
     }
-    if (!res || res->status != 200) {
-        throw std::runtime_error("Failed to save password to server: " + (res ? res->body : "Network error"));
+    if (res->status != 200) {
+        throw std::runtime_error("Failed to save password to server: " + res->body);
     }
 }
 
 bool PasswordClient::del(const std::string& name) const {
-    httplib::Client cli(baseUrl);
-    auto res = cli.Delete("/password/" + name, getHeaders());
+    httplib::Client cli(getHost(baseUrl));
+    cli.enable_server_certificate_verification(false);
+    auto res = cli.Delete(buildPath(baseUrl, "/password/" + name), getHeaders());
+    if (!res) return false;
     // std::cout << "Delete password response status: " << res->status << std::endl;
-    if (res && res->status == 401) {
+    if (res->status == 401) {
         if (login()) {
-            res = cli.Delete("/password/" + name, getHeaders());
+            res = cli.Delete(buildPath(baseUrl, "/password/" + name), getHeaders());
+            if (!res) return false;
             // std::cout << "Delete password response status after login: " << res->status << std::endl;
         }
-    }
-    if (!res) {
-        return false;
     }
 
     switch (res->status) {
@@ -125,23 +157,26 @@ bool PasswordClient::del(const std::string& name) const {
 }
 
 std::vector<std::string> PasswordClient::listSites() const {
-    httplib::Client cli(baseUrl);
-    auto res = cli.Get("/sites", getHeaders());
+    httplib::Client cli(getHost(baseUrl));
+    cli.enable_server_certificate_verification(false);
+    auto res = cli.Get(buildPath(baseUrl, "/sites"), getHeaders());
+    if (!res) throw std::runtime_error("Network error listing sites");
     // std::cout << "List sites response status: " << res->status << std::endl;
-    if (res && res->status == 401) {
+    if (res->status == 401) {
         if (login()) {
-            res = cli.Get("/sites", getHeaders());
+            res = cli.Get(buildPath(baseUrl, "/sites"), getHeaders());
+            if (!res) throw std::runtime_error("Network error listing sites retry");
             // std::cout << "List sites response status after login: " << res->status << res->body << std::endl;
         }
     }
     std::vector<std::string> sites;
-    if (res && res->status == 200) {
+    if (res->status == 200) {
         auto j = json::parse(res->body);
         for (const auto& item : j) {
             sites.push_back(item.get<std::string>());
         }
     }
-    if (res && res->status != 200) {
+    if (res->status != 200) {
         throw std::runtime_error("Error listing sites: " + res->body);
     }
 

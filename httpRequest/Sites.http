@@ -1,5 +1,5 @@
 ### Login and Store Token
-POST http://localhost:8080/login
+POST https://joaodantas.com.br/pwserver/login
 Content-Type: application/json
 
 {
@@ -16,5 +16,5 @@ Content-Type: application/json
 %}
 
 ### Fetch Protected Data
-GET http://localhost:8080/sites
+GET https://joaodantas.com.br/pwserver/sites
 Authorization: Bearer {{auth_token}}

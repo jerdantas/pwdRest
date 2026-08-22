@@ -91,10 +91,11 @@ void MainWindow::onOk()
             }
             // No extra popup after copy to keep it quiet.
         } else {
-            auto sites = client.listSites();
-            QString list;
-            for (const auto& s : sites) list += "  • " + QString::fromStdString(s) + "\n";
-            QString msg = QString("%1 not found, choose from:\n%2").arg(site, list);
+            // auto sites = client.listSites();
+            // QString list;
+            // for (const auto& s : sites) list += "  • " + QString::fromStdString(s) + "\n";
+            // QString msg = QString("%1 not found, choose from:\n%2").arg(site, list);
+            QString msg = QString("%1 not found.").arg(site);
             QMessageBox::information(this, "Not found", msg);
         }
     } catch (const std::exception& ex) {
