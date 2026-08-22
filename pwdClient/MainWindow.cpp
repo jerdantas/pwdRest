@@ -122,6 +122,7 @@ void MainWindow::onNew() {
             client.set(name.toStdString(), userId.toStdString(), password.toStdString());
             loadPasswords();
             refreshCompleter();
+            QMessageBox::information(this, "New Entry", QString("%1 added").arg(name));
         } else {
             QMessageBox::warning(this, "Input Error", "Name, userid, and password cannot be empty.");
         }
@@ -138,6 +139,7 @@ void MainWindow::onDelete() {
     try {
         if (client.del(site.toStdString())) {
             QMessageBox::information(this, "Deleted", QString("%1 deleted").arg(site));
+            loadPasswords();
             refreshCompleter();
         } else {
             auto sites = client.listSites();
