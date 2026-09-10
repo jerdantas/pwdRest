@@ -1,5 +1,24 @@
+#POST https://joaodantas.com.br/pwserver/login
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "ownerId": "dantas",
+  "ownerPwd": "mypwd"
+}
+
+> {%
+    client.test("Status is 200 OK", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    // Store token in global environment for subsequent calls
+    client.global.set("auth_token", response.body.token);
+%}
+
+###
+
 ### Set new site
-POST http://localhost:8080/password
+POST https://joaodantas.com.br/pwserver/password
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 
@@ -10,5 +29,5 @@ Content-Type: application/json
 }
 ###
 
-GET http://localhost:8080/password/google
+GET https://joaodantas.com.br/pwserver/password/voegol
 Authorization: Bearer {{auth_token}}

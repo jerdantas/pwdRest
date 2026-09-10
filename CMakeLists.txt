@@ -65,6 +65,8 @@ set (UIS
         pwdClient/MainWindow.ui
         pwdClient/NewEntryDialog.ui
         pwdClient/LoginDialog.ui
+        pwdClient/Environment.cpp
+        pwdClient/Environment.h
 )
 
 set(SERVER_SOURCES
@@ -87,3 +89,25 @@ target_compile_definitions(pwd-client PRIVATE CPPHTTPLIB_OPENSSL_SUPPORT)
 add_executable(pwd-server ${SERVER_SOURCES} ${SERVER_HEADERS})
 target_include_directories(pwd-server PRIVATE ${SQLite3_INCLUDE_DIRS})
 target_link_libraries(pwd-server PRIVATE ${SQLite3_LIBRARIES} httplib::httplib nlohmann_json::nlohmann_json jwt-cpp::jwt-cpp OpenSSL::SSL OpenSSL::Crypto)
+
+# --- Installation & Packaging Configuration ---
+include(GNUInstallDirs)
+
+# Install executable
+install(TARGETS pwd-client
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+# CPack configuration for Debian/Ubuntu (.deb)
+set(CPACK_PACKAGE_NAME "pwd-client")
+set(CPACK_PACKAGE_VENDOR "pwdRest")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Desktop client for pwdRest password manager")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_GENERATOR "DEB")
+
+# Package maintainer details required for Debian packaging
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Your Name <your.email@example.com>")
+set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt6widgets6, libssl3")
+
+include(CPack)

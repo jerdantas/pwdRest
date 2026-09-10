@@ -1,5 +1,5 @@
 ### Login and Store Token
-POST https://joaodantas.com.br/pwserver/login
+POST http://localhost:8080/login
 Content-Type: application/json
 
 {
@@ -9,7 +9,8 @@ Content-Type: application/json
 
 ###
 
-POST https://joaodantas.com.br/pwserver/signup
+#POST https://joaodantas.com.br/pwserver/signup
+POST http://localhost:8080/signup
 Content-Type: application/json
 
 {

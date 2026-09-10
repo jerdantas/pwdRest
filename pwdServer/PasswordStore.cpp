@@ -74,6 +74,37 @@ bool PasswordStore::get(const std::string& ownerId, const std::string& site, std
     return found;
 }
 
+std::vector<PwData> PasswordStore::getList(const std::string& ownerId, const std::string& site) const {
+    const char* sql = "SELECT Site, UserId, Passwd FROM PassWd WHERE OwnerId = ?1 AND Site LIKE ?2 COLLATE NOCASE;";
+    std::string site_patter = "%" + site + "%";
+    sqlite3_stmt* stmt = nullptr;
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK)
+        throw std::runtime_error("DB prepare failed (get)");
+
+    sqlite3_bind_text(stmt, 1, ownerId.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, site_patter.c_str(), -1, SQLITE_TRANSIENT);
+
+    std::vector<PwData> result;
+
+    while (true) {
+        int rc = sqlite3_step(stmt);
+        if (rc == SQLITE_ROW) {
+            const std::string storedSite = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+            const std::string user  = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+            const std::string pass  = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+            result.push_back({storedSite, user, pass});
+        } else if (rc == SQLITE_DONE) {
+            finalize(stmt);
+            break;
+        } else {
+            finalize(stmt);
+            throw std::runtime_error("DB step failed (list)");
+        }
+    }
+
+    return result;
+}
+
 void PasswordStore::set(const std::string& ownerId, const std::string& site, const std::string& user, const std::string& pass) const {
     const char* sql = R"SQL(
         INSERT INTO PassWd (OwnerId, Site, UserId, Passwd)

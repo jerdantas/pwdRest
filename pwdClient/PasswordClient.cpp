@@ -30,24 +30,18 @@ static std::string buildPath(const std::string& url, const std::string& endpoint
     return endpoint;
 }
 
-PasswordClient::PasswordClient(std::string  serverUrl) : baseUrl(std::move(serverUrl)) {}
+PasswordClient::PasswordClient()= default;
 
-bool PasswordClient::login() const {
-    const char* homeDir = std::getenv("HOME");
-    if (!homeDir) return false;
-
-    std::string envPath = std::string(homeDir) + "/.local/pwd-client/.env";
-    std::ifstream file(envPath);
-    if (!file.is_open()) return false;
-
-    std::string ownerId, ownerPwd;
-    std::getline(file, ownerId);
-    std::getline(file, ownerPwd);
-
-    return login(ownerId, ownerPwd);
+void PasswordClient::setBaseUrl(const std::string& serverUrl) {
+    baseUrl = serverUrl;
 }
 
-bool PasswordClient::login(const std::string& ownerId, const std::string& ownerPwd) const {
+void PasswordClient::setOwner(const std::string& owner, const std::string& password) {
+    ownerId = owner;
+    ownerPwd = password;
+}
+
+bool PasswordClient::login() const {
     httplib::Client cli(getHost(baseUrl));
     cli.enable_server_certificate_verification(false);
     json j = {{"ownerId", ownerId}, {"ownerPwd", ownerPwd}};

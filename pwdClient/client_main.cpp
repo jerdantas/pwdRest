@@ -21,14 +21,17 @@ static bool ensureCredentials(PasswordClient& client) {
     if (!QDir().mkpath(pwdPath)) {
         return false;
     };
-    QString envFile = pwdPath + "/.env";
+    const QString envFile = pwdPath + "/.env";
 
-    QFile file(envFile);
-    if (file.exists()) {
+    if (const QFile file(envFile); file.exists()) {
+        Environment env(envFile.toStdString());
+        client.setOwner(env.userid(), env.password());
+        client.setBaseUrl(env.server());
         return true;
     }
 
-    LoginDialog dialog(client);
+    Environment env(envFile.toStdString());
+    LoginDialog dialog(client, env);
     return dialog.exec() == QDialog::Accepted;
 }
 
@@ -36,7 +39,7 @@ int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
     QIcon icon(":/icons/pwd-qt.png");
     // qDebug() << icon.isNull();
-    app.setWindowIcon(icon);
+    QApplication::setWindowIcon(icon);
 
     QScreen *screen = QGuiApplication::primaryScreen();
     qreal dpi = screen->logicalDotsPerInch();
@@ -45,10 +48,10 @@ int main(int argc, char* argv[]) {
     QApplication::setFont(font);
 
     try {
-        std::string serverUrl = "https://joaodantas.com.br/pwserver";
-        // std::string serverUrl = "http://localhost:8080";
+        // std::string serverUrl = "https://joaodantas.com.br/pwserver";
+        const std::string serverUrl = "http://localhost:8080";
 
-        PasswordClient client(serverUrl);
+        PasswordClient client{};
 
         if (!ensureCredentials(client)) {
             return 0; // User canceled signup
@@ -59,7 +62,7 @@ int main(int argc, char* argv[]) {
         w.setWindowIcon(icon);
         w.setWindowIcon(icon);
         w.show();
-        return app.exec();
+        return QApplication::exec();
     } catch (const std::exception& ex) {
         QMessageBox::critical(nullptr, "Startup error", ex.what());
         return 1;

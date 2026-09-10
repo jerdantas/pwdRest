@@ -153,6 +153,26 @@ int main() {
         }
     });
 
+    // GET /passwords/:sites like
+    svr.Get(R"(/passwords/(.*))", [&](const httplib::Request& req, httplib::Response& res) ->void {
+        std::string sitePatt = req.matches[1];
+        try {
+            std::string ownerId = getOwnerId(req);
+            auto sites = store.getList(ownerId, sitePatt);
+            json j = json::array();
+            for (const auto&[site, user, pass] : sites) {
+                j.push_back({{"site", site}, {"user", user}, {"pass", pass}});
+            }
+            res.set_content(j.dump(), "application/json");
+            res.status = 200;
+        } catch ( const std::exception& e) {
+            res.status = 500;
+            res.set_content(std::string("Error listing sites: ") + e.what(),  "text/plain");
+            // std::cout << "Internal server error: " << e.what() << std::endl;
+            return;
+        }
+    });
+
     // GET /password/:site
     svr.Get(R"(/password/(.*))", [&](const httplib::Request& req, httplib::Response& res) {
         std::string site = req.matches[1];
