@@ -14,7 +14,14 @@ using json = nlohmann::json;
 
 const std::string JWT_SECRET = "super_secret_key_for_pwd_rest";
 
-int main() {
+int main(int argc, char* argv[]) {
+    bool printRequests = false;
+    for (int i = 1; i < argc; ++i) {
+        if (std::string(argv[i]) == "-p") {
+            printRequests = true;
+        }
+    }
+
     // Setup Database Path
     const char* homeDir = std::getenv("HOME");
     if (!homeDir) {
@@ -27,6 +34,12 @@ int main() {
 
     PasswordStore store((dir / "rempasswd.db").string());
     httplib::Server svr;
+
+    if (printRequests) {
+        svr.set_logger([](const httplib::Request& req, const httplib::Response& res) {
+            std::cout << "Request: " << req.method << " " << req.path << " -> " << res.status << std::endl;
+        });
+    }
 
     auto getOwnerId = [](const httplib::Request& req) -> std::string {
         std::string auth_header = req.get_header_value("Authorization");
@@ -56,6 +69,9 @@ int main() {
                     return httplib::Server::HandlerResponse::Unhandled;
                 } catch (const std::exception& e) {
                     // Token verification failed
+                    if (printRequests) {
+                        std::cout << "Token verification failed: " << e.what() << std::endl;
+                    }
                 }
             }
         }

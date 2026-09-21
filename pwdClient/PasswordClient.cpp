@@ -41,6 +41,10 @@ void PasswordClient::setOwner(const std::string& owner, const std::string& passw
     ownerPwd = password;
 }
 
+std::string PasswordClient::getBaseUrl() const {
+    return baseUrl;
+}
+
 bool PasswordClient::login() const {
     httplib::Client cli(getHost(baseUrl));
     cli.enable_server_certificate_verification(false);
@@ -70,6 +74,8 @@ bool PasswordClient::signup(const std::string& ownerId, const std::string& owner
     auto res = cli.Post(buildPath(baseUrl, "/signup"), j.dump(), "application/json");
     if (!res) return false;
     // std::cout << "Signup response status: " << res->status << std::endl;
+    this->ownerId = ownerId;
+    this->ownerPwd = password;
     return res->status == 201;
 }
 
@@ -151,6 +157,11 @@ bool PasswordClient::del(const std::string& name) const {
 }
 
 std::vector<std::string> PasswordClient::listSites() const {
+    std::vector<std::string> sites;
+    if (jwtToken.empty()) {
+        if (!login()) return sites;
+    }
+
     httplib::Client cli(getHost(baseUrl));
     cli.enable_server_certificate_verification(false);
     auto res = cli.Get(buildPath(baseUrl, "/sites"), getHeaders());
@@ -163,7 +174,6 @@ std::vector<std::string> PasswordClient::listSites() const {
             // std::cout << "List sites response status after login: " << res->status << res->body << std::endl;
         }
     }
-    std::vector<std::string> sites;
     if (res->status == 200) {
         auto j = json::parse(res->body);
         for (const auto& item : j) {

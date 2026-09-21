@@ -48,10 +48,8 @@ int main(int argc, char* argv[]) {
     QApplication::setFont(font);
 
     try {
-        // std::string serverUrl = "https://joaodantas.com.br/pwserver";
-        const std::string serverUrl = "http://localhost:8080";
-
         PasswordClient client{};
+        client.setBaseUrl("http://localhost:8080");
 
         if (!ensureCredentials(client)) {
             return 0; // User canceled signup

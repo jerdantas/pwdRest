@@ -9,12 +9,12 @@ Content-Type: application/json
 
 ###
 
-#POST https://joaodantas.com.br/pwserver/signup
-POST http://localhost:8080/signup
+POST https://joaodantas.com.br/pwserver/signup
+#POST http://localhost:8080/signup
 Content-Type: application/json
 
 {
-  "ownerId": "dantas",
-  "ownerName": "João Eduardo",
+  "ownerId": "alex",
+  "ownerName": "Alexandre",
   "ownerPwd": "mypwd"
 }

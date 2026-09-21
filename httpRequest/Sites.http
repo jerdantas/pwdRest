@@ -16,5 +16,5 @@ Content-Type: application/json
 %}
 
 ### Fetch Protected Data
-GET https://joaodantas.com.br/pwserver/password/gol
+GET https://joaodantas.com.br/pwserver/sites
 Authorization: Bearer {{auth_token}}

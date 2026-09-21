@@ -24,12 +24,13 @@ public:
 
     void setBaseUrl(const std::string& serverUrl);
     void setOwner(const std::string& owner, const std::string& ownerPwd);
+    std::string getBaseUrl() const;
 
 private:
     std::string baseUrl;
     mutable std::string jwtToken;
-    std::string ownerId;
-    std::string ownerPwd;
+    mutable std::string ownerId;
+    mutable std::string ownerPwd;
 
     httplib::Headers getHeaders() const;
 };

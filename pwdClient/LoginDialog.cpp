@@ -49,10 +49,11 @@ void LoginDialog::onOwnerIdChanged(const QString &text) const {
 }
 
 void LoginDialog::onLoginClicked() {
-    QString ownerId = ui->ownerIdEdit->text().trimmed();
-    QString password = ui->passwordEdit->text();
+    auto ownerId = ui->ownerIdEdit->text().trimmed();
+    auto password = ui->passwordEdit->text().trimmed();
+    client.setOwner(ownerId.toStdString(), password.toStdString());
 
-    if (client.login(ownerId.toStdString(), password.toStdString())) {
+    if (client.login()) {
         QString pwdPath = QDir::homePath() + "/.local/pwd-client";
         if (!QDir().mkpath(pwdPath)) {
             QMessageBox::critical(this, "Error", "Failed to create directory for password manager.");
@@ -61,7 +62,8 @@ void LoginDialog::onLoginClicked() {
         QFile file(pwdPath + "/.env");
         if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
             QTextStream out(&file);
-            out << ownerId << "\n" << password << "\n";
+            out << "userid=" << ownerId << "\n" << "password=" << password << "\n";
+            out << "server=" << QString::fromStdString(client.getBaseUrl()) << "\n";
             file.close();
         }
         accept();
@@ -110,7 +112,7 @@ void LoginDialog::onSignupClicked() {
             if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
                 QTextStream out(&file);
                 out << "userid=" << ownerId << "\n" << "password=" << password << "\n";
-                out << "server=https://joaodantas.com.br\n";
+                out << "server=" << QString::fromStdString(client.getBaseUrl()) << "\n";
                 file.close();
             }
             accept();

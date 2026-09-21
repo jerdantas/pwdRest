@@ -103,6 +103,7 @@ void MainWindow::onOk()
     }
 }
 
+// Load passwords from the database and display them in the list widget.
 void MainWindow::loadPasswords() const {
     ui->listWidget->clear();
     auto entries = client.listSites();
