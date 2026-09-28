@@ -15,15 +15,15 @@ public:
     PasswordClient();
 
     bool login() const;
-    bool signup(const std::string& ownerId, const std::string& ownerName, const std::string& password) const;
+    bool signup(const std::string& id, const std::string& name, const std::string& password) const;
     bool get(const std::string& name, std::string& userId, std::string& password) const;
     void set(const std::string& name, const std::string& userId, const std::string& password) const;
     bool del(const std::string& name) const;
-    std::vector<std::string> listSites() const;
+    void fillSiteNames();
     QStringList getSiteNames() const;
 
     void setBaseUrl(const std::string& serverUrl);
-    void setOwner(const std::string& owner, const std::string& ownerPwd);
+    void setOwner(const std::string& owner, const std::string& ownerPwd) const;
     std::string getBaseUrl() const;
 
 private:
@@ -31,6 +31,7 @@ private:
     mutable std::string jwtToken;
     mutable std::string ownerId;
     mutable std::string ownerPwd;
+    QStringList siteNames;
 
     httplib::Headers getHeaders() const;
 };

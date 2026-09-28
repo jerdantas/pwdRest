@@ -7,7 +7,6 @@
 #include <httplib.h>
 #include <nlohmann/json.hpp>
 #include <stdexcept>
-#include <utility>
 #include <iostream>
 
 using json = nlohmann::json;
@@ -36,7 +35,7 @@ void PasswordClient::setBaseUrl(const std::string& serverUrl) {
     baseUrl = serverUrl;
 }
 
-void PasswordClient::setOwner(const std::string& owner, const std::string& password) {
+void PasswordClient::setOwner(const std::string& owner, const std::string& password) const {
     ownerId = owner;
     ownerPwd = password;
 }
@@ -63,18 +62,18 @@ bool PasswordClient::login() const {
     return false;
 }
 
-bool PasswordClient::signup(const std::string& ownerId, const std::string& ownerName, const std::string& password) const {
+bool PasswordClient::signup(const std::string& id, const std::string& name, const std::string& password) const {
     httplib::Client cli(getHost(baseUrl));
     cli.enable_server_certificate_verification(false);
     json j = {
-        {"ownerId", ownerId},
-        {"ownerName", ownerName},
+        {"ownerId", id},
+        {"ownerName", name},
         {"ownerPwd", password}
     };
     auto res = cli.Post(buildPath(baseUrl, "/signup"), j.dump(), "application/json");
     if (!res) return false;
     // std::cout << "Signup response status: " << res->status << std::endl;
-    this->ownerId = ownerId;
+    this->ownerId = id;
     this->ownerPwd = password;
     return res->status == 201;
 }
@@ -156,10 +155,15 @@ bool PasswordClient::del(const std::string& name) const {
     return false;
 }
 
-std::vector<std::string> PasswordClient::listSites() const {
-    std::vector<std::string> sites;
+/*
+ * fillSiteNames:
+ * Fill the siteNames vector with the names of all sites.
+ *
+ */
+void PasswordClient::fillSiteNames() {
+    siteNames.clear();
     if (jwtToken.empty()) {
-        if (!login()) return sites;
+        return;
     }
 
     httplib::Client cli(getHost(baseUrl));
@@ -177,20 +181,18 @@ std::vector<std::string> PasswordClient::listSites() const {
     if (res->status == 200) {
         auto j = json::parse(res->body);
         for (const auto& item : j) {
-            sites.push_back(item.get<std::string>());
+            siteNames.push_back(item.get<std::string>().data());
         }
     }
     if (res->status != 200) {
         throw std::runtime_error("Error listing sites: " + res->body);
     }
-
-    return sites;
 }
 
 QStringList PasswordClient::getSiteNames() const {
     QStringList list;
-    for (const auto& site : listSites()) {
-        list << QString::fromStdString(site);
+    for (auto& site : siteNames) {
+        list << site;
     }
     return list;
 }

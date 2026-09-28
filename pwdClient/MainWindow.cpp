@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QKeyEvent>
 #include <QCompleter>
+#include <QTimer>
 
 #include "MainWindow.h"
 #include "./ui_MainWindow.h"
@@ -20,13 +21,15 @@ MainWindow::MainWindow(PasswordClient& pwclient, QWidget *parent)
     ui->setupUi(this);
     setWindowTitle("pw - Password Manager");
 
-    // Get site names from PasswordClient
-    QStringList siteNames = client.getSiteNames();
+    if (!client.login())
+        return;
 
-    // Create completer
-    auto* completer = new QCompleter(siteNames, this);
+    // Get site names from PasswordClient and initialize completer
+    client.fillSiteNames();
+    refreshCompleter();
+    auto* completer = new QCompleter(siteModel, this);
     completer->setCaseSensitivity(Qt::CaseInsensitive);
-    completer->setFilterMode(Qt::MatchContains);  // Optional: match anywhere in string
+    completer->setFilterMode(Qt::MatchContains);
 
     // Attach completer to QLineEdit
     ui->siteEdit->setCompleter(completer);
@@ -103,12 +106,13 @@ void MainWindow::onOk()
     }
 }
 
-// Load passwords from the database and display them in the list widget.
+/*
+ *  Display the site names in the list widget.
+ */
 void MainWindow::loadPasswords() const {
     ui->listWidget->clear();
-    auto entries = client.listSites();
-    for (const auto& entry : entries) {
-        ui->listWidget->addItem(QString::fromStdString(entry));
+    for (const auto& entry : client.getSiteNames()) {
+        ui->listWidget->addItem(entry);
     }
 }
 
@@ -121,6 +125,7 @@ void MainWindow::onNew() {
         auto password = dialog.getPassword();
         if (!name.isEmpty() && !userId.isEmpty() && !password.isEmpty()) {
             client.set(name.toStdString(), userId.toStdString(), password.toStdString());
+            client.fillSiteNames();
             loadPasswords();
             refreshCompleter();
             QMessageBox::information(this, "New Entry", QString("%1 added").arg(name));
@@ -140,12 +145,13 @@ void MainWindow::onDelete() {
     try {
         if (client.del(site.toStdString())) {
             QMessageBox::information(this, "Deleted", QString("%1 deleted").arg(site));
+            client.fillSiteNames();
             loadPasswords();
             refreshCompleter();
         } else {
-            auto sites = client.listSites();
             QString list;
-            for (const auto& s : sites) list += "  • " + QString::fromStdString(s) + "\n";
+            for (const auto& s : client.getSiteNames())
+                list += "  • " + s + "\n";
             QString msg = QString("%1 not found, choose from:\n%2").arg(site, list);
             QMessageBox::information(this, "Not found", msg);
         }
@@ -157,12 +163,15 @@ void MainWindow::onDelete() {
 void MainWindow::refreshCompleter() {
     QStringList sites;
     try {
-        for (const auto& s : client.listSites()) {
-            sites << QString::fromStdString(s);
+        for (const auto& s : client.getSiteNames()) {
+            sites << s;
         }
     } catch (const std::exception& ex) {
         QMessageBox::critical(this, "Network error", ex.what());
     }
+    for (const auto &site : sites)
+        std::cout << site.toStdString() << std::endl;
+
     sites.sort(Qt::CaseInsensitive);
     siteModel->setStringList(sites);
 }
@@ -185,14 +194,18 @@ void MainWindow::onSiteDoubleClicked(const QListWidgetItem* item) const {
 }
 
 bool MainWindow::eventFilter(QObject* obj, QEvent* event) {
-    if (obj == ui->siteEdit && event->type() == QEvent::KeyPress) {
-        auto* keyEvent = dynamic_cast<QKeyEvent*>(event);
-        if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) {
-            ui->okButton->click();   // Simulate OK
-            return true;
-        } else if (keyEvent->key() == Qt::Key_Escape) {
-            ui->closeButton->click(); // Simulate Close
-            return true;
+    if (obj == ui->siteEdit) {
+        if (event->type() == QEvent::FocusIn) {
+            QTimer::singleShot(0, ui->siteEdit, &QLineEdit::selectAll);
+        } else if (event->type() == QEvent::KeyPress) {
+            auto* keyEvent = dynamic_cast<QKeyEvent*>(event);
+            if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) {
+                ui->okButton->click();   // Simulate OK
+                return true;
+            } else if (keyEvent->key() == Qt::Key_Escape) {
+                ui->closeButton->click(); // Simulate Close
+                return true;
+            }
         }
     }
     return QMainWindow::eventFilter(obj, event);
